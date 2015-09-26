@@ -4,6 +4,7 @@ import gitbucket.core.plugin.PluginRegistry
 import gitbucket.core.service.SystemSettingsService.SystemSettings
 import gitbucket.core.util.Version
 import javax.servlet.ServletContext
+import me.huzi.gitbucket.bugspots.controller.BugSpotsController
 
 class Plugin extends gitbucket.core.plugin.Plugin {
   override val pluginId: String = "bugspots"
@@ -14,6 +15,10 @@ class Plugin extends gitbucket.core.plugin.Plugin {
 
   override val versions: Seq[Version] = Seq(
     Version(1, 0))
+
+  override val controllers = Seq(
+    "/*" -> new BugSpotsController
+  )
 
   override def javaScripts(registry: PluginRegistry, context: ServletContext, settings: SystemSettings): Seq[(String, String)] = {
     // Add Snippet link to the header

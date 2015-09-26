@@ -1,0 +1,9 @@
+@(repository: gitbucket.core.service.RepositoryService.RepositoryInfo)(implicit context: gitbucket.core.controller.Context)
+@import context._
+@import gitbucket.core.view.helpers._
+@gitbucket.core.html.main("Bug Spots", Some(repository)){
+  @gitbucket.core.html.menu("bugspots", repository){
+    hoge
+  }
+}
+
