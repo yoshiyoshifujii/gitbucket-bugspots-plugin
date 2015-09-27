@@ -17,7 +17,7 @@
             <table class="table table-file-list">
               <tr>
                 <th colspan="3" style="font-weight: normal; border: none;">
-                  @spots.length hotspots.
+                  Found @spots.length hotspots
                 </th>
               </tr>
               @spots.map { spot =>
@@ -36,6 +36,9 @@
             </table>
           </div><!-- /.tab-pane -->
           <div class="tab-pane" id="fixes">
+            <div class="muted" style="background-color: white;">
+              <i class="octicon octicon-git-commit"></i> Found @fixes.length bugfix commits
+            </div>
             <div class="box-commits">
               @fixes.map { fix =>
               @Some(fix.commit).map { commit =>

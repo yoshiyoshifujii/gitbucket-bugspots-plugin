@@ -33,13 +33,13 @@ class Plugin extends gitbucket.core.plugin.Plugin {
         |  if($$("li[data-toggle=tooltip] i.menu-icon.octicon-book", s).length === 0) {
         |    s.append(
         |      $$('<li>').append(
-        |        $$('<a><i class="menu-icon octicon octicon-pulse"></i> Bug Spots</a></li>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
+        |        $$('<a><i class="menu-icon octicon octicon-bug"></i> Bug Spots</a></li>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
         |      )
         |    );
         |  } else {
         |    s.append(
         |      $$('<li data-toggle="tooltip" data-placement="left" data-original-title="Bug Spots"></li>').append(
-        |        $$('<a href=""><i class="menu-icon octicon octicon-pulse"></i></a>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
+        |        $$('<a href=""><i class="menu-icon octicon octicon-bug"></i></a>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
         |      )
         |    );
         |  }
@@ -54,7 +54,7 @@ class Plugin extends gitbucket.core.plugin.Plugin {
         |  var lc = s.children(':last').remove().clone();
         |  s.append(
         |    $$('<li class="active" data-toggle="tooltip" data-placement="left" data-original-title="Bug Spots"></li>').append(
-        |      $$('<a href=""><i class="menu-icon menu-icon-active octicon octicon-pulse"></i></a>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
+        |      $$('<a href=""><i class="menu-icon menu-icon-active octicon octicon-bug"></i></a>').attr('href', '${path}/' + owner + '/' + repository + '/bugspots')
         |    )
         |  );
         |  s.append(lc);
