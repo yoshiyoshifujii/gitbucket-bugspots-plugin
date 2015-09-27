@@ -1,6 +1,6 @@
 @(repository: gitbucket.core.service.RepositoryService.RepositoryInfo,
-  fixes: List[me.huzi.gitbucket.bugspots.controller.Fix],
-  spots: List[me.huzi.gitbucket.bugspots.controller.Spot])(implicit context: gitbucket.core.controller.Context)
+  fixes: List[me.huzi.gitbucket.bugspots.util.BugSpotUtil.Fix],
+  spots: List[me.huzi.gitbucket.bugspots.util.BugSpotUtil.Spot])(implicit context: gitbucket.core.controller.Context)
 @import context._
 @import gitbucket.core.view.helpers._
 @gitbucket.core.html.main("Bug Spots", Some(repository)){
