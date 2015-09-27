@@ -31,12 +31,12 @@ trait BugSpotsControllerBase extends ControllerBase {
     } else {
       using(Git.open(getRepositoryDir(repository.owner, repository.name))) { git =>
         using(new RevWalk(git.getRepository)) { revWalk =>
-          val fixes = getFixList(git, revWalk)
           val now = ZonedDateTime.now(ZoneOffset.UTC)
-          val first = fixes.head.date
+          val fixes = getFixList(git, revWalk, repository.repository.defaultBranch)
+          val first = fixes.headOption
           val a = fixes.flatMap { fix =>
             fix.files.map { file =>
-              val t = 1 - ((now - fix.date) / (now - first))
+              val t = 1 - ((now - fix.date) / (now - first.get.date))
               (file, 1 / (1 + java.lang.Math.exp((-12 * t.toFloat) + 12)))
             }
           }
@@ -52,8 +52,8 @@ trait BugSpotsControllerBase extends ControllerBase {
 
   private val PATTERN = """(?i).*\b(fix(ed|es)?|close(s|d)?)\b.*""".r
 
-  private def getFixList(git: Git, revWalk: RevWalk) = {
-    revWalk.markStart(revWalk.parseCommit(git.getRepository.resolve("master")))
+  private def getFixList(git: Git, revWalk: RevWalk, target: String) = {
+    revWalk.markStart(revWalk.parseCommit(git.getRepository.resolve(target)))
     revWalk.sort(RevSort.TOPO, true)
     revWalk.sort(RevSort.REVERSE, true)
     revWalk.iterator().asScala.toStream.filter {
@@ -63,7 +63,7 @@ trait BugSpotsControllerBase extends ControllerBase {
       val files = rc.getParents.headOption.map { oc =>
         getDiffs(git, rc.getName, oc.getName).map(_.oldPath)
       }.getOrElse(Nil)
-      Fix(ci.fullMessage.split("\n").head, if (ci.isDifferentFromAuthor) ci.commitTime else ci.authorTime, files)
+      Fix(ci, files)
     }.toList
   }
 
@@ -88,6 +88,18 @@ trait BugSpotsControllerBase extends ControllerBase {
   }
 }
 
-case class Fix(message: String, date: java.util.Date, files: List[String])
+case class Fix(
+  message: String,
+  date: java.util.Date,
+  files: List[String])
+
+object Fix {
+  def apply(commitInfo: CommitInfo, files: List[String]): Fix = {
+    Fix(
+      message = commitInfo.fullMessage.split("\n").head,
+      date = if (commitInfo.isDifferentFromAuthor) commitInfo.commitTime else commitInfo.authorTime,
+      files = files)
+  }
+}
 
 case class Spot(file: String, score: Double)
