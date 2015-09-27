@@ -1,8 +1,11 @@
 package me.huzi.gitbucket.bugspots.controller
 
+import java.time._
 import scala.collection.JavaConverters._
 import scala.sys.process._
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.revwalk._
+import org.eclipse.jgit.treewalk._
 import gitbucket.core.controller._
 import gitbucket.core.model._
 import gitbucket.core.service._
@@ -20,8 +23,71 @@ class BugSpotsController extends BugSpotsControllerBase
 trait BugSpotsControllerBase extends ControllerBase {
   self: RepositoryService with AccountService with ReferrerAuthenticator =>
 
+  private val logger = org.slf4j.LoggerFactory.getLogger(classOf[BugSpotsControllerBase])
+
   get("/:owner/:repository/bugspots")(referrersOnly { repository =>
-    html.list(repository)
+    if (repository.commitCount == 0) {
+      html.guide(repository)
+    } else {
+      using(Git.open(getRepositoryDir(repository.owner, repository.name))) { git =>
+        using(new RevWalk(git.getRepository)) { revWalk =>
+          val fixes = getFixList(git, revWalk)
+          val now = ZonedDateTime.now(ZoneOffset.UTC)
+          val first = fixes.head.date
+          val a = fixes.flatMap { fix =>
+            fix.files.map { file =>
+              val t = 1 - ((now - fix.date) / (now - first))
+              (file, 1 / (1 + java.lang.Math.exp((-12 * t.toFloat) + 12)))
+            }
+          }
+          val spots = a.groupBy(_._1).map {
+            case (file, l) =>
+              (file, l.foldLeft(0d)((i, t) => i + t._2))
+          }.toList.sortBy(_._2).reverse.map(t => Spot(t._1, t._2))
+          html.list(repository, fixes, spots)
+        }
+      }
+    }
   })
+
+  private val PATTERN = """(?i).*\b(fix(ed|es)?|close(s|d)?)\b.*""".r
+
+  private def getFixList(git: Git, revWalk: RevWalk) = {
+    revWalk.markStart(revWalk.parseCommit(git.getRepository.resolve("master")))
+    revWalk.sort(RevSort.TOPO, true)
+    revWalk.sort(RevSort.REVERSE, true)
+    revWalk.iterator().asScala.toStream.filter {
+      rc => PATTERN.findFirstIn(rc.getFullMessage).nonEmpty
+    }.map { rc =>
+      val ci = new CommitInfo(rc)
+      val files = rc.getParents.headOption.map { oc =>
+        getDiffs(git, rc.getName, oc.getName).map(_.oldPath)
+      }.getOrElse(Nil)
+      Fix(ci.fullMessage.split("\n").head, if (ci.isDifferentFromAuthor) ci.commitTime else ci.authorTime, files)
+    }.toList
+  }
+
+  private def getDiffs(git: Git, from: String, to: String): List[DiffInfo] = {
+    val reader = git.getRepository.newObjectReader
+    val oldTreeIter = new CanonicalTreeParser
+    oldTreeIter.reset(reader, git.getRepository.resolve(from + "^{tree}"))
+
+    val newTreeIter = new CanonicalTreeParser
+    newTreeIter.reset(reader, git.getRepository.resolve(to + "^{tree}"))
+
+    git.diff.setNewTree(newTreeIter).setOldTree(oldTreeIter).call.asScala.map { diff =>
+      val oldIsImage = FileUtil.isImage(diff.getOldPath)
+      val newIsImage = FileUtil.isImage(diff.getNewPath)
+      DiffInfo(diff.getChangeType, diff.getOldPath, diff.getNewPath, None, None, oldIsImage, newIsImage, Option(diff.getOldId).map(_.name), Option(diff.getNewId).map(_.name))
+    }.toList
+  }
+
+  implicit class RichZonedDateTime(self: ZonedDateTime) {
+    def -(d: java.util.Date) = (self.toEpochSecond - toZonedDateTime(d).toEpochSecond).toDouble./(1000)
+    private def toZonedDateTime(d: java.util.Date) = d.toInstant.atZone(ZoneOffset.UTC)
+  }
 }
 
+case class Fix(message: String, date: java.util.Date, files: List[String])
+
+case class Spot(file: String, score: Double)

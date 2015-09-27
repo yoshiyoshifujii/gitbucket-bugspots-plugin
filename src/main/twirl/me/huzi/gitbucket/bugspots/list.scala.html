@@ -1,9 +1,28 @@
-@(repository: gitbucket.core.service.RepositoryService.RepositoryInfo)(implicit context: gitbucket.core.controller.Context)
+@(repository: gitbucket.core.service.RepositoryService.RepositoryInfo,
+  fixes: List[me.huzi.gitbucket.bugspots.controller.Fix],
+  spots: List[me.huzi.gitbucket.bugspots.controller.Spot])(implicit context: gitbucket.core.controller.Context)
 @import context._
 @import gitbucket.core.view.helpers._
 @gitbucket.core.html.main("Bug Spots", Some(repository)){
   @gitbucket.core.html.menu("bugspots", repository){
-    hoge
+
+    <h2>Found @fixes.length bugfix commits, with @spots.length hotspots:</h2>
+
+    <h3>Fixed:</h3>
+    <ul>
+      @fixes.map { fix =>
+      <li>@fix.message</li>
+      }
+    </ul>
+
+    <h3>Hotspots:</h3>
+    <ul>
+    @spots.map { spot =>
+    <li>
+      <span>@spot.file</span>
+      <span>@{"%.4f".format(spot.score)}</span>
+    </li>
+    }
   }
 }
 
