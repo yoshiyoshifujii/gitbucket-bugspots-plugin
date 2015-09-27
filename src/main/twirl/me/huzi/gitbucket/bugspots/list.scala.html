@@ -5,24 +5,84 @@
 @import gitbucket.core.view.helpers._
 @gitbucket.core.html.main("Bug Spots", Some(repository)){
   @gitbucket.core.html.menu("bugspots", repository){
+    <div class="row-fluid">
+      <div class="span-12">
+        <ul id="myTab" class="nav nav-tabs">
+          <li data-toggle="tab"><a href="#hotspots">Hotspots</a></li>
+          <li data-toggle="tab"><a href="#fixes">Fixes</a></li>
+        </ul>
 
-    <h2>Found @fixes.length bugfix commits, with @spots.length hotspots:</h2>
-
-    <h3>Fixed:</h3>
-    <ul>
-      @fixes.map { fix =>
-      <li>@fix.message</li>
-      }
-    </ul>
-
-    <h3>Hotspots:</h3>
-    <ul>
-    @spots.map { spot =>
-    <li>
-      <span>@spot.file</span>
-      <span>@{"%.4f".format(spot.score)}</span>
-    </li>
-    }
+        <div id="myTabContent" class="tab-content">
+          <div class="tab-pane active" id="hotspots">
+            <table class="table table-file-list">
+              <tr>
+                <th colspan="3" style="font-weight: normal; border: none;">
+                  @spots.length hotspots.
+                </th>
+              </tr>
+              @spots.map { spot =>
+              <tr>
+                <td width="16" class="file-icon">
+                  <i class="octicon octicon-file-text"></i>
+                </td>
+                <td>
+                  <a href="@url(repository)/blob/@{encodeRefName(repository.repository.defaultBranch)}/@spot.file">@spot.file</a>
+                </td>
+                <td style="text-align: right;">
+                  <span>@{"%.4f".format(spot.score)}</span>
+                </td>
+              </tr>
+              }
+            </table>
+          </div><!-- /.tab-pane -->
+          <div class="tab-pane" id="fixes">
+            <div class="box-commits">
+              @fixes.map { fix =>
+              @Some(fix.commit).map { commit =>
+              <div class="box-content-row" style="padding: 8px;">
+                <ul class="nav nav-pills-group pull-right" style="margin-top: 2px; margin-bottom: 0px; margin-right: 4px;">
+                  <li class="first"><a href="@url(repository)/commit/@commit.id" class="link monospace">@commit.id.substring(0, 7)</a></li>
+                  <li class="last"><a href="@url(repository)/tree/@commit.id" style="padding-top: 9px; padding-bottom: 10px;"><i class="octicon octicon-code link"></i></a></li>
+                </ul>
+                <div>
+                  <div class="commit-avatar-image">@avatar(commit, 40)</div>
+                  <div class="commit-message-box">
+                    <a href="@url(repository)/commit/@commit.id" class="commit-message" style="font-weight: bold;">@link(commit.summary, repository)</a>
+                    @if(commit.description.isDefined){
+                    <a href="javascript:void(0)" onclick="$('#description-@commit.id').toggle();" class="omit">...</a>
+                    }
+                    <br>
+                    @if(commit.description.isDefined){
+                    <pre id="description-@commit.id" style="display: none;" class="commit-description">@link(commit.description.get, repository)</pre>
+                    }
+                    <div class="small">
+                      @user(commit.authorName, commit.authorEmailAddress, "username")
+                      <span class="muted">authored @gitbucket.core.helper.html.datetimeago(commit.authorTime)</span>
+                      @if(commit.isDifferentFromAuthor) {
+                      <span class="octicon octicon-arrow-right" style="margin-top : -2px;"></span>
+                      @user(commit.committerName, commit.committerEmailAddress, "username")
+                      <span class="muted">committed @gitbucket.core.helper.html.datetimeago(commit.authorTime)</span>
+                      }
+                    </div><!-- /.small -->
+                  </div><!-- /.commit-message-box -->
+                </div>
+              </div><!-- /.box-content-row -->
+              }
+              }
+            </div><!-- /.box-commits -->
+          </div><!-- /.tab-pane -->
+        </div><!-- /.tab-content -->
+      </div><!-- /.span-12 -->
+    </div><!-- /.row-fluid -->
   }
 }
-
+<script>
+$(function() {
+  $("#myTab a").click(function (e) {
+    e.preventDefault();
+    $(this).tab("show");
+    return false;
+  });
+  $("#myTab a:first").tab("show");
+});
+</script>

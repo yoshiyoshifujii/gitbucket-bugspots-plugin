@@ -11,6 +11,7 @@ import gitbucket.core.util.JGitUtil._
 object BugSpotUtil {
 
   case class Fix(
+    commit: CommitInfo,
     message: String,
     date: java.util.Date,
     files: List[String])
@@ -18,6 +19,7 @@ object BugSpotUtil {
   object Fix {
     def apply(commitInfo: CommitInfo, files: List[String]): Fix = {
       Fix(
+        commit = commitInfo,
         message = commitInfo.fullMessage.split("\n").head,
         date = if (commitInfo.isDifferentFromAuthor) commitInfo.commitTime else commitInfo.authorTime,
         files = files)
