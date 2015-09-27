@@ -2,6 +2,7 @@ package me.huzi.gitbucket.bugspots.util
 
 import java.time._
 import scala.collection.JavaConverters._
+import scala.util.matching.Regex
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.revwalk._
 import org.eclipse.jgit.treewalk._
@@ -28,20 +29,16 @@ object BugSpotUtil {
 
   case class Spot(file: String, score: Double)
 
-  private val PATTERN = """(?i).*\b(fix(ed|es)?|close(s|d)?)\b.*""".r
-
   implicit class RichZonedDateTime(self: ZonedDateTime) {
     def -(d: java.util.Date) = (self.toEpochSecond - toZonedDateTime(d).toEpochSecond).toDouble./(1000)
     private def toZonedDateTime(d: java.util.Date) = d.toInstant.atZone(ZoneOffset.UTC)
   }
 
-  def getFixList(git: Git, revWalk: RevWalk, target: String) = {
+  def getFixList(git: Git, revWalk: RevWalk, target: String)(isIncluded: RevCommit => Boolean) = {
     revWalk.markStart(revWalk.parseCommit(git.getRepository.resolve(target)))
     revWalk.sort(RevSort.TOPO, true)
     revWalk.sort(RevSort.REVERSE, true)
-    revWalk.iterator().asScala.toStream.filter {
-      rc => PATTERN.findFirstIn(rc.getFullMessage).nonEmpty
-    }.map { rc =>
+    revWalk.iterator().asScala.toStream.filter(isIncluded(_)).map { rc =>
       val ci = new CommitInfo(rc)
       val files = rc.getParents.headOption.map { oc =>
         getDiffs(git, rc.getName, oc.getName).map(_.oldPath)

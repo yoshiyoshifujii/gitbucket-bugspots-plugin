@@ -1,4 +1,5 @@
 @(repository: gitbucket.core.service.RepositoryService.RepositoryInfo,
+  regex: String,
   fixes: List[me.huzi.gitbucket.bugspots.util.BugSpotUtil.Fix],
   spots: List[me.huzi.gitbucket.bugspots.util.BugSpotUtil.Spot])(implicit context: gitbucket.core.controller.Context)
 @import context._
@@ -7,6 +8,12 @@
   @gitbucket.core.html.menu("bugspots", repository){
     <div class="row-fluid">
       <div class="span-12">
+
+        <form action="@url(repository)/bugspots" method="GET" class="form-inline">
+          <input class="span11 input-block-level" type="text" name="regex" value="@regex" placeholder="Regex pattern.">
+          <button class="btn" type="submit"><i class="octicon octicon-bug"></i></button>
+        </form>
+
         <ul id="myTab" class="nav nav-tabs">
           <li data-toggle="tab"><a href="#hotspots">Hotspots</a></li>
           <li data-toggle="tab"><a href="#fixes">Fixes</a></li>
