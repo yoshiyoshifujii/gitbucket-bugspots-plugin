@@ -16,6 +16,10 @@ It will viewing the bug prediction at Google.
 
 ## Release Notes
 
+### 3.12
+
+- update to GitBucket 3.12
+
 ### 1.0
 
 - introduce gitbucket-bugspots-plugin
