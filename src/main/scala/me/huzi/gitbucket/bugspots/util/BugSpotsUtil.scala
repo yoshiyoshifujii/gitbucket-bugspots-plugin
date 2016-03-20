@@ -58,7 +58,19 @@ object BugSpotUtil {
     git.diff.setNewTree(newTreeIter).setOldTree(oldTreeIter).call.asScala.map { diff =>
       val oldIsImage = FileUtil.isImage(diff.getOldPath)
       val newIsImage = FileUtil.isImage(diff.getNewPath)
-      DiffInfo(diff.getChangeType, diff.getOldPath, diff.getNewPath, None, None, oldIsImage, newIsImage, Option(diff.getOldId).map(_.name), Option(diff.getNewId).map(_.name))
+      DiffInfo(
+        diff.getChangeType,
+        diff.getOldPath,
+        diff.getNewPath,
+        None,
+        None,
+        oldIsImage,
+        newIsImage,
+        Option(diff.getOldId).map(_.name),
+        Option(diff.getNewId).map(_.name),
+        diff.getOldMode.toString,
+        diff.getNewMode.toString,
+        false)
     }.toList
   }
 
