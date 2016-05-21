@@ -1,6 +1,6 @@
 # gitbucket-bugspots-plugin
 
-This plugin enhances [takezoe/gitbucket](https://github.com/takezoe/gitbucket) by providing an viewing bugspots.
+This plugin enhances [gitbucket/gitbucket](https://github.com/gitbucket/gitbucket) by providing an viewing bugspots.
 
 ## Features
 
@@ -15,6 +15,10 @@ It will viewing the bug prediction at Google.
 - Restart GitBucket
 
 ## Release Notes
+
+### 4.0
+
+- update to GitBucket 4.0
 
 ### 3.12
 
