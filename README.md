@@ -16,6 +16,10 @@ It will viewing the bug prediction at Google.
 
 ## Release Notes
 
+### 4.5
+
+- update to GitBucket 4.5
+
 ### 4.0
 
 - update to GitBucket 4.0
