@@ -9,7 +9,6 @@ import gitbucket.core.util.ControlUtil._
 import gitbucket.core.util.Directory._
 import me.huzi.gitbucket.bugspots.html
 import me.huzi.gitbucket.bugspots.util._
-import me.huzi.gitbucket.bugspots.util.BugSpotUtil._
 
 class BugSpotsController extends BugSpotsControllerBase
   with RepositoryService with AccountService
@@ -22,11 +21,11 @@ trait BugSpotsControllerBase extends ControllerBase {
   private val DEFAULT_REGEX = """(?i).*\b(fix(ed|es)?|close(s|d)?)\b.*""".r
 
   get("/:owner/:repository/bugspots")(referrersOnly { repository =>
-    if (repository.commitCount == 0) {
-      html.guide(repository)
-    } else {
-      val regex = params.get("regex").map(_.r).getOrElse(DEFAULT_REGEX)
-      using(Git.open(getRepositoryDir(repository.owner, repository.name))) { git =>
+    using(Git.open(getRepositoryDir(repository.owner, repository.name))) { git =>
+      if (JGitUtil.isEmpty(git)) {
+        html.guide(repository)
+      } else {
+        val regex = params.get("regex").map(_.r).getOrElse(DEFAULT_REGEX)
         using(new RevWalk(git.getRepository)) { revWalk =>
           val fixes = BugSpotUtil.getFixList(git, revWalk, repository.repository.defaultBranch) { rc =>
             regex.findFirstIn(rc.getFullMessage).nonEmpty
