@@ -1,6 +1,6 @@
 val Organization = "me.huzi.gitbucket"
 val ProjectName = "gitbucket-bugspots-plugin"
-val ProjectVersion = "4.11.0"
+val ProjectVersion = "4.32.0"
 
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
 
