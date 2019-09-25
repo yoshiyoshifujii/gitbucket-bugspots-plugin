@@ -1,13 +1,14 @@
 package me.huzi.gitbucket.bugspots.util
 
 import java.time._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.revwalk._
 import org.eclipse.jgit.treewalk._
 import gitbucket.core.util._
 import gitbucket.core.util.JGitUtil._
+import Ordering.Double.IeeeOrdering
 
 object BugSpotUtil {
 
@@ -38,7 +39,7 @@ object BugSpotUtil {
     revWalk.markStart(revWalk.parseCommit(git.getRepository.resolve(target)))
     revWalk.sort(RevSort.TOPO, true)
     revWalk.sort(RevSort.REVERSE, true)
-    revWalk.iterator().asScala.toStream.filter(isIncluded(_)).map { rc =>
+    revWalk.iterator().asScala.to(LazyList).filter(isIncluded(_)).map { rc =>
       val ci = new CommitInfo(rc)
       val files = rc.getParents.headOption.map { oc =>
         getDiffs(git, rc.getName, oc.getName).map(_.oldPath)
@@ -70,7 +71,8 @@ object BugSpotUtil {
         Option(diff.getNewId).map(_.name),
         diff.getOldMode.toString,
         diff.getNewMode.toString,
-        false)
+        false,
+        None)
     }.toList
   }
 
